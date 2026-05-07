@@ -1,4 +1,4 @@
-# AdapToPASS - NeurIPS
+# AdapToPASS - NeurIPS 2026
 
 **Ambiguity-aware Adaptive Spherical Transformer for Panoramic Semantic Segmentation**
 
