@@ -1,4 +1,4 @@
-# AdapToPASS
+# AdapToPASS - NeurIPS
 
 **Ambiguity-aware Adaptive Spherical Transformer for Panoramic Semantic Segmentation**
 
@@ -16,3 +16,4 @@ AdapToPASS addresses this by introducing ambiguity-aware adaptive spherical perc
 - **Bifocal Spherical Representation:** combines an acuity stream for high-resolution local detail with a lateral stream for broad contextual understanding.
 - **Boundary-aware Supervision:** uses signed distance field guidance to improve semantic boundary localization.
 - **Transformation Robustness:** evaluates robustness under unseen spherical transformations including rotation, scale, translation, orientation shift, and viewpoint shift.
+
