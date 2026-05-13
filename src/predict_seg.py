@@ -371,13 +371,20 @@ def overlay_on_image(img_rgb: np.ndarray, seg_rgb: np.ndarray, alpha: float = 0.
     return (alpha * seg + (1 - alpha) * img).clip(0, 255).astype(np.uint8)
 
 
-def apply_mask_as_alpha(img_rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
+def apply_mask_as_black(img_rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
     if img_rgb.shape[:2] != mask.shape:
         raise ValueError(f"Mask shape {mask.shape} does not match image shape {img_rgb.shape[:2]}")
 
-    rgba = np.dstack((img_rgb, mask))
-    rgba[mask == 0, :3] = 0
-    return rgba
+    out = img_rgb.copy()
+    out[mask == 0] = 0
+    return out
+
+
+def crop_to_mask_rows(img_rgb: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    rows = np.any(mask > 0, axis=1)
+    top = int(np.argmax(rows))
+    bottom = int(len(rows) - np.argmax(rows[::-1]))
+    return img_rgb[top:bottom]
 
 
 def parse_args():
@@ -509,18 +516,18 @@ def main():
         mask = np.minimum(mask, gt_mask)
     elif args.gt_path:
         warnings.warn(f"[predict] GT path was provided but not found: {args.gt_path}")
-    seg_rgba = apply_mask_as_alpha(seg_rgb, mask)
-    overlay_rgba = apply_mask_as_alpha(overlay, mask)
+    seg_out = crop_to_mask_rows(apply_mask_as_black(seg_rgb, mask), mask)
+    overlay_out = crop_to_mask_rows(apply_mask_as_black(overlay, mask), mask)
 
-    pred_png = os.path.join(out_dir, f"{stem}_pred_labels.png")
-    overlay_png = os.path.join(out_dir, f"{stem}_overlay.png")
-    if not cv2.imwrite(pred_png, cv2.cvtColor(seg_rgba, cv2.COLOR_RGBA2BGRA)):
-        raise RuntimeError(f"[predict] Failed to save prediction image: {pred_png}")
-    if not cv2.imwrite(overlay_png, cv2.cvtColor(overlay_rgba, cv2.COLOR_RGBA2BGRA)):
-        raise RuntimeError(f"[predict] Failed to save overlay image: {overlay_png}")
+    pred_jpg = os.path.join(out_dir, f"{stem}_pred_labels.jpg")
+    overlay_jpg = os.path.join(out_dir, f"{stem}_overlay.jpg")
+    if not cv2.imwrite(pred_jpg, cv2.cvtColor(seg_out, cv2.COLOR_RGB2BGR)):
+        raise RuntimeError(f"[predict] Failed to save prediction image: {pred_jpg}")
+    if not cv2.imwrite(overlay_jpg, cv2.cvtColor(overlay_out, cv2.COLOR_RGB2BGR)):
+        raise RuntimeError(f"[predict] Failed to save overlay image: {overlay_jpg}")
 
     dt = time.time() - t0
-    _emit_success(pred_png, overlay_png, dt)
+    _emit_success(pred_jpg, overlay_jpg, dt)
     _emit_ascii_art()
 
 
