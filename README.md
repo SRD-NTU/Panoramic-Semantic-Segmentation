@@ -1,19 +1,60 @@
-# AdapToPASS - NeurIPS 2026
+## Installation
 
-**Ambiguity-aware Adaptive Spherical Transformer for Panoramic Semantic Segmentation**
+**Python 3.9+ and a CUDA-capable GPU are recommended.**
 
-This repository contains an anonymous project page for a research submission on robust panoramic semantic segmentation. The project presents **AdapToPASS**, a bio-inspired spherical Transformer designed to improve 360° semantic segmentation under unseen spherical transformations.
+```bash
+# 1. Install PyTorch for your CUDA version (example: CUDA 12.9)
+pip install torch --index-url https://download.pytorch.org/whl/cu129
 
-## Overview
+# 2. Install remaining dependencies
+pip install -r requirements.txt
+```
 
-Panoramic semantic segmentation is challenging because real-world 360° imagery often undergoes camera motion, viewpoint changes, rotations, scale changes, and other spherical transformations. These perturbations introduce contextual, geometric, and boundary ambiguity, which can degrade models that assume a stable canonical spherical layout.
+---
 
-AdapToPASS addresses this by introducing ambiguity-aware adaptive spherical perception directly on the sphere. The method adaptively changes contextual aggregation according to local ambiguity, combines fine-detail and wide-field spherical representations, and uses boundary-aware supervision for sharper semantic segmentation.
+## Running Inference
 
-## Key Ideas
+### Option A — Shell script (quickest)
 
-- **Adaptive Spherical Attention:** dynamically modulates spherical attention using a learned local ambiguity signal.
-- **Bifocal Spherical Representation:** combines an acuity stream for high-resolution local detail with a lateral stream for broad contextual understanding.
-- **Boundary-aware Supervision:** uses signed distance field guidance to improve semantic boundary localization.
-- **Transformation Robustness:** evaluates robustness under unseen spherical transformations including rotation, scale, translation, orientation shift, and viewpoint shift.
+```bash
+# Run on the bundled example image
+bash src/stanford2d3d_predict.sh
 
+# Run on your own image
+IMG=/path/to/your/panorama.png \
+OUTDIR=/path/to/output/ \
+bash src/stanford2d3d_predict.sh
+```
+
+### Option B — Python directly
+
+```bash
+python src/predict_seg.py \
+  --image_path /path/to/your/panorama.png \
+  --output_dir predictions/ \
+  --checkpoint src/saved_weights/model_best.pth
+```
+
+---
+
+## Outputs
+
+Two files are written to `--output_dir` for each input `<stem>.png`:
+
+| File | Content |
+|---|---|
+| `<stem>_pred_labels.png` | Semantic segmentation map (RGBA, class colours) |
+| `<stem>_overlay.png` | Original panorama blended with segmentation (RGBA) |
+
+---
+
+## Key Arguments
+
+| Argument | Default | Description |
+|---|---|---|
+| `--image_path` | *(required)* | Path to input ERP panorama |
+| `--output_dir` | *(required)* | Directory for output images |
+| `--checkpoint` | `saved_weights/model_best.pth` | Model weights |
+| `--device` | `auto` | `auto` \| `cuda` \| `cpu` |
+| `--img_width` | `512` | ERP width (height = width / 2) |
+| `--gt_path` | `None` | Optional GT path for ignore-region masking |

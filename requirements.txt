@@ -1,0 +1,7 @@
+torch>=2.0.0
+numpy>=1.26.4
+opencv-python>=4.0.0
+einops>=0.8.0
+timm>=0.9.10
+trimesh>=4.0.0
+tqdm>=4.0.0
